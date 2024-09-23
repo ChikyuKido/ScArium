@@ -12,3 +12,16 @@ func GetUserByName(username string) (*entity.User, error) {
 	}
 	return &u, nil
 }
+
+func DoesUserByNameExists(username string) bool {
+	var count int64
+	database.GetDB().Model(&entity.User{}).Where("username = ?", username).Count(&count)
+	return count > 0
+}
+
+func InsertNewUser(user entity.User) error {
+	if err := database.GetDB().Create(&user).Error; err != nil {
+		return err
+	}
+	return nil
+}

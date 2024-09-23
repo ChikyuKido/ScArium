@@ -12,15 +12,9 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString, _ := c.Cookie("jwt")
 		// guest login
-		if tokenString == "" || tokenString == "guest" {
-			guest, err := repo.GetUserByName("guest")
-			if err != nil {
-				c.JSON(http.StatusUnauthorized, gin.H{"error": "No guest user found."})
-				c.Abort()
-				return
-			}
-			c.Set("user", guest)
-			c.Next()
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "No jwt token provided"})
+			c.Abort()
 			return
 		}
 
