@@ -46,8 +46,8 @@ func loginRoute() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
-		c.JSON(200, gin.H{"jwt": jwt})
+		c.SetCookie("jwt", jwt, 60*60*24*30, "/", "localhost", false, true)
+		c.JSON(200, gin.H{"message": "successfully logged in"})
 	}
 }
 

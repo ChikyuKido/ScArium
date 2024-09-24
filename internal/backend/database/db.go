@@ -21,6 +21,14 @@ func InitDB() {
 	if err != nil {
 		log.I.Fatalf("failed to create user database: %v", err)
 	}
+	err = db.AutoMigrate(&entity.D4sAccount{})
+	if err != nil {
+		log.I.Fatalf("failed to create d4s account database: %v", err)
+	}
+	err = db.AutoMigrate(&entity.MoodleAccount{})
+	if err != nil {
+		log.I.Fatalf("failed to create moodle account database: %v", err)
+	}
 }
 
 func GetDB() *gorm.DB {
