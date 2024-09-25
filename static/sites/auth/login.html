@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="/css/bulma.css">
+</head>
+<body>
+{{ template "navbar" . }}
+
+<section class="hero is-fullheight">
+    <div class="hero-body">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-4-desktop">
+                    <div class="box">
+                        <h1 class="title has-text-centered">Login</h1>
+
+                        <form id="authForm">
+                            <div class="field">
+                                <label class="label">Username</label>
+                                <div class="control">
+                                    <input class="input" type="text" id="username" placeholder="Enter your username" required>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Password</label>
+                                <div class="control">
+                                    <input class="input" type="password" id="password" placeholder="Enter your password" required>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <div class="control">
+                                    <button class="button is-fullwidth is-primary" type="submit">Login</button>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div id="error-message">
+
+                                </div>
+                            </div>
+                        </form>
+                        <p class="has-text-centered mt-4">
+                            Don't have an account? <a href="/auth/register">Register here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script src="/js/auth/auth.js"></script>
+</body>
+</html>

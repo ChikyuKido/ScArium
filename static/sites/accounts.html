@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>Accounts</title>
+  <link rel="stylesheet" href="/css/bulma.css">
+</head>
+<body>
+{{ template "navbar" . }}
+<div class="container mt-5">
+  <div>
+    <h3 class="title is-4 has-text-white">Moodle Accounts</h3>
+    <div class="columns is-multiline">
+      <div class="column is-one-quarter">
+        <div class="card" style="max-width: 200px;">
+          <div class="card-image">
+            <figure class="image is-4by3" style="margin: 0;">
+              <img src="https://via.placeholder.com/400x300" alt="User Image" class="is-fullwidth" style="object-fit: cover;">
+            </figure>
+          </div>
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <p class="title is-6">John Doe</p>
+                <p class="subtitle is-7">@john.doe</p>
+                <p><strong>Instance URL:</strong> <a href="#">https://example-moodle.com</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="mt-5">
+    <h3 class="title is-4 has-text-white">D4s Accounts</h3>
+    <div class="columns is-multiline">
+      <div class="column is-one-quarter">
+        <div class="card" style="max-width: 200px;">
+          <div class="card-image">
+            <figure class="image is-4by3" style="margin: 0;">
+              <img src="https://via.placeholder.com/400x300" alt="User Image" class="is-fullwidth" style="object-fit: cover;">
+            </figure>
+          </div>
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <p class="title is-6">Jane Smith</p>
+                <p class="subtitle is-7">@jane.smith</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="has-text-right mt-5">
+    <button class="button is-link">Create Account</button>
+  </div>
+</div>
+</body>
+</html>

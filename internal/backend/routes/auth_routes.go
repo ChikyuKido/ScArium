@@ -12,7 +12,7 @@ import (
 )
 
 func InitAuthRoutes(r *gin.RouterGroup) {
-	r.GET("login", loginRoute())
+	r.POST("login", loginRoute())
 	r.POST("register", registerRoute(false))
 	r.POST("adminRegister", registerRoute(true))
 }

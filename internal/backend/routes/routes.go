@@ -8,10 +8,10 @@ import (
 func InitRoutes(r *gin.Engine) {
 	adminRegisterRedirectGroup := r.Group("/", middlewares.AdminRegisterRedirectMiddleware())
 	backend := adminRegisterRedirectGroup.Group("/api/v1")
-	backendAuth := adminRegisterRedirectGroup.Group("/api/v1", middlewares.AuthMiddleware())
+	backendAuth := adminRegisterRedirectGroup.Group("/api/v1", middlewares.AuthMiddleware(false))
 	InitAuthRoutes(backend.Group("/auth"))
 	InitAccountRoutes(backendAuth.Group("/account"))
-	InitSitesRoutes(adminRegisterRedirectGroup.Group("/"))
+	InitSitesRoutes(r)
 	initDefaultRoutes(r)
 }
 
