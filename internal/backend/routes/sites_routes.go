@@ -105,6 +105,7 @@ func InitSitesRoutes(r *gin.Engine) {
 	initStatics(normal)
 	initAuthPages(adminRegisterRedirect)
 	servePage("/accounts", "./static/sites/accounts.html", authRedirectGroup, nil)
+	servePage("/", "./static/sites/index.html", authRedirectGroup, nil)
 }
 
 func initStatics(r *gin.RouterGroup) {

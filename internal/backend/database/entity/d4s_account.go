@@ -1,12 +1,10 @@
 package entity
 
-import "gorm.io/gorm"
-
 type D4sAccount struct {
-	gorm.Model
-	UserId      uint
-	Username    string
+	Model
+	UserId      uint   `json:"user_id"`
+	Username    string `json:"username"`
 	Password    string `json:"-"`
-	DisplayName string
-	ImageUrl    string
+	DisplayName string `json:"display_name"`
+	ImageUrl    string `json:"image_url"`
 }

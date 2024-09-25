@@ -1,13 +1,11 @@
 package entity
 
-import "gorm.io/gorm"
-
 type MoodleAccount struct {
-	gorm.Model
-	UserId      uint
-	InstanceUrl string
-	Username    string
+	Model
+	UserId      uint   `json:"user_id"`
+	InstanceUrl string `json:"instance_url"`
+	Username    string `json:"username"`
 	Password    string `json:"-"`
-	DisplayName string
-	ImageUrl    string
+	DisplayName string `json:"display_name"`
+	ImageUrl    string `json:"image_url"`
 }

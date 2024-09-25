@@ -4,60 +4,73 @@
   <meta charset="UTF-8">
   <title>Accounts</title>
   <link rel="stylesheet" href="/css/bulma.css">
+  <style>
+    .modal {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 {{ template "navbar" . }}
 <div class="container mt-5">
   <div>
     <h3 class="title is-4 has-text-white">Moodle Accounts</h3>
-    <div class="columns is-multiline">
-      <div class="column is-one-quarter">
-        <div class="card" style="max-width: 200px;">
-          <div class="card-image">
-            <figure class="image is-4by3" style="margin: 0;">
-              <img src="https://via.placeholder.com/400x300" alt="User Image" class="is-fullwidth" style="object-fit: cover;">
-            </figure>
-          </div>
-          <div class="card-content">
-            <div class="media">
-              <div class="media-content">
-                <p class="title is-6">John Doe</p>
-                <p class="subtitle is-7">@john.doe</p>
-                <p><strong>Instance URL:</strong> <a href="#">https://example-moodle.com</a></p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="columns is-multiline" id="moodleAccountsContainer">
 
     </div>
   </div>
 
   <div class="mt-5">
     <h3 class="title is-4 has-text-white">D4s Accounts</h3>
-    <div class="columns is-multiline">
-      <div class="column is-one-quarter">
-        <div class="card" style="max-width: 200px;">
-          <div class="card-image">
-            <figure class="image is-4by3" style="margin: 0;">
-              <img src="https://via.placeholder.com/400x300" alt="User Image" class="is-fullwidth" style="object-fit: cover;">
-            </figure>
-          </div>
-          <div class="card-content">
-            <div class="media">
-              <div class="media-content">
-                <p class="title is-6">Jane Smith</p>
-                <p class="subtitle is-7">@jane.smith</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="columns is-multiline" id="d4sAccountsContainer">
+
     </div>
   </div>
   <div class="has-text-right mt-5">
-    <button class="button is-link">Create Account</button>
+    <button class="button is-link" id="createAccount">Create Account</button>
+  </div>
+  <div class="modal" id="popupForm">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Select Type</p>
+        <button class="delete" aria-label="close" id="closeModal"></button>
+      </header>
+      <section class="modal-card-body">
+        <div id="errorMessage" class="notification is-danger is-hidden"></div>
+        <div class="field">
+          <label class="label">Select Type</label>
+          <div class="control">
+            <div class="select" id="typeSelect">
+              <select>
+                <option value="">Choose a type...</option>
+                <option value="moodle">Moodle</option>
+                <option value="digi4school">Digi4School</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div id="moodleFields" class="field is-hidden">
+          <label class="label">Moodle Fields</label>
+          <div class="control mb-3"><input class="input" type="text" placeholder="Username" id="moodleUsername" required></div>
+          <div class="control mb-3"><input class="input" type="password" placeholder="Password" id="moodlePassword" required></div>
+          <div class="control mb-3"><input class="input" type="text" placeholder="Display Name" id="moodleDisplayName" required></div>
+          <div class="control mb-3"><input class="input" type="text" placeholder="Instance URL" id="moodleInstanceUrl" required></div>
+        </div>
+        <div id="digi4schoolFields" class="field is-hidden">
+          <label class="label">Digi4School Fields</label>
+          <div class="control mb-3"><input class="input" type="text" placeholder="Username" id="digi4schoolUsername" required></div>
+          <div class="control mb-3"><input class="input" type="password" placeholder="Password" id="digi4schoolPassword" required></div>
+          <div class="control mb-3"><input class="input" type="text" placeholder="Display Name" id="digi4schoolDisplayName" required></div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-success" id="submitBtn">Submit</button>
+        <button class="button" id="cancelBtn">Cancel</button>
+      </footer>
+    </div>
   </div>
 </div>
+<script src="/js/accounts.js"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 
 <nav class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
-        <a class="navbar-item" href="#">
+        <a class="navbar-item" href="/">
             <span class="icon"><i class="fas fa-water"></i></span>
             <span>ScArium</span>
         </a>
@@ -10,18 +10,19 @@
 
     <div class="navbar-menu">
         <div class="navbar-start">
-            <a class="navbar-item" href="/library">Library</a>
-            <a class="navbar-item" href="/settings">Settings</a>
+            <a class="navbar-item" href="/accounts">Accounts</a>
         </div>
 
         <div class="navbar-end">
-            <div class="navbar-item">
+            <div class="navbar-item  is-hidden" id="authButtons">
                 <div class="buttons">
                     <a class="button is-light" href="/register">Register</a>
                     <a class="button is-primary" href="/login">Login</a>
                 </div>
             </div>
+            <a class="navbar-item is-hidden" id="settingsLink" href="/settings">Settings</a>
         </div>
     </div>
 </nav>
+<script src="/js/partials/navbar.js"></script>
 {{ end }}
