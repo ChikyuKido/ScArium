@@ -1,13 +1,29 @@
+const openModalButton = document.getElementById('createAccount');
+const closeModalButton = document.getElementById('closeModal');
+const popupForm = document.getElementById('popupForm');
+const typeSelect = document.getElementById('typeSelect');
+const moodleFields = document.getElementById('moodleFields');
+const digi4schoolFields = document.getElementById('digi4schoolFields');
+const uploadButton = document.getElementById('uploadButton');
+const fileInput = document.getElementById('displayImage');
+const fileNameSpan = document.getElementById('fileName');
+const buttonField = document.getElementById('uploadImageButtonField');
+
 document.addEventListener("DOMContentLoaded", function () {
     initializePage();
 
-    const openModalButton = document.getElementById('createAccount');
-    const closeModalButton = document.getElementById('closeModal');
-    const popupForm = document.getElementById('popupForm');
-    const typeSelect = document.getElementById('typeSelect');
-    const moodleFields = document.getElementById('moodleFields');
-    const digi4schoolFields = document.getElementById('digi4schoolFields');
-
+    uploadButton.addEventListener('click', function() {
+        fileInput.click();
+    });
+    fileInput.addEventListener('change', function() {
+        const file = fileInput.files[0];
+        if (file.size > 200 * 1024) {
+            fileNameSpan.textContent = 'File is too large. Max size is 200KB.';
+            fileInput.value = '';
+        } else {
+            fileNameSpan.textContent = `Selected file: ${file.name}`;
+        }
+    });
     openModalButton.addEventListener('click', () => {
         popupForm.style.display = 'block';
     });
@@ -18,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     typeSelect.addEventListener('change', () => {
         const selectedType = typeSelect.querySelector('select').value;
-        toggleFields(selectedType, moodleFields, digi4schoolFields);
+        toggleFields(selectedType);
     });
 
     document.getElementById('submitBtn').addEventListener('click', () => {
@@ -36,7 +52,7 @@ function initializePage() {
     displayD4sAccounts();
 }
 
-function toggleFields(selectedType, moodleFields, digi4schoolFields) {
+function toggleFields(selectedType) {
     moodleFields.classList.add('is-hidden');
     digi4schoolFields.classList.add('is-hidden');
     if (selectedType === 'moodle') {
@@ -44,6 +60,7 @@ function toggleFields(selectedType, moodleFields, digi4schoolFields) {
     } else if (selectedType === 'digi4school') {
         digi4schoolFields.classList.remove('is-hidden');
     }
+    buttonField.classList.remove('is-hidden')
 }
 
 async function handleAccountCreation(selectedType) {
@@ -78,12 +95,21 @@ function getD4sFields() {
     ];
 }
 
+
+
 async function createAccount(endpoint, accountData) {
-    const { username, password, display_name, instance_url } = accountData;
+    const { username, password, display_name, instance_url,image_file} = accountData;
 
     if (!username || !password || !display_name || (instance_url !== undefined && !instance_url)) {
         return "All fields must be filled";
     }
+
+    if(image_file) {
+        accountData.display_image = await convertToBase64(image_file);
+    }else {
+        accountData.display_image = "empty";
+    }
+    delete accountData.image_file;
 
     let errorString = "";
     const response = await fetch(endpoint, {
@@ -95,16 +121,30 @@ async function createAccount(endpoint, accountData) {
         const data = await response.json();
         errorString = data.error || 'Failed to create account';
     }
-
+    //clear filename
+    fileNameSpan.textContent = '';
+    fileInput.value = '';
     return errorString;
 }
 
+function convertToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+
+        reader.onload = () => resolve(reader.result.split(',')[1]); // Get Base64 part only
+        reader.onerror = (error) => reject(error);
+    });
+}
+
 async function createMoodleAccount(username, password, displayName, instanceUrl) {
-    return createAccount("/api/v1/account/createMoodleAccount", { username, password, display_name: displayName, instance_url: instanceUrl });
+    return createAccount("/api/v1/account/createMoodleAccount", { username, password, display_name: displayName,
+        image_file: fileInput.files.length === 0 ? null : fileInput.files[0], instance_url: instanceUrl });
 }
 
 async function createD4sAccount(username, password, displayName) {
-    return createAccount("/api/v1/account/createD4sAccount", { username, password, display_name: displayName });
+    return createAccount("/api/v1/account/createD4sAccount", { username, password, display_name: displayName,
+        image_file: fileInput.files.length === 0 ? null : fileInput.files[0]});
 }
 
 function displayMoodleAccounts() {
@@ -129,6 +169,10 @@ function fetchAccounts(apiEndpoint, cardCreator, containerId) {
         })
         .then(data => {
             data.forEach(account => {
+                if(account.image_id !== "") {
+                    account.image_url = "/api/v1/account/accountImage/"+account.image_id;
+                }
+                delete account.image_id;
                 const card = cardCreator(account);
                 container.appendChild(card);
             });

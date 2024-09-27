@@ -5,12 +5,13 @@ import (
 	"ScArium/internal/backend/database/entity"
 )
 
-func CreateD4sAccount(user *entity.User, username string, password string, displayName string) error {
+func CreateD4sAccount(user *entity.User, username string, password string, displayName string, imageId string) error {
 	d4s := entity.D4sAccount{
 		UserId:      user.ID,
 		Username:    username,
 		Password:    password,
 		DisplayName: displayName,
+		ImageId:     imageId,
 	}
 
 	return database.GetDB().Create(&d4s).Error

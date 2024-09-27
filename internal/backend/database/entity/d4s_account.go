@@ -6,5 +6,5 @@ type D4sAccount struct {
 	Username    string `json:"username"`
 	Password    string `json:"-"`
 	DisplayName string `json:"display_name"`
-	ImageUrl    string `json:"image_url"`
+	ImageId     string `json:"image_id"`
 }

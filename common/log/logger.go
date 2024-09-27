@@ -29,5 +29,5 @@ func initSingleLogger(log *logrus.Logger) {
 
 		FullTimestamp: true,
 	})
-	log.SetFormatter(&formatter{Prefix: "Internal"})
+	log.SetFormatter(&formatter{Prefix: "External"})
 }

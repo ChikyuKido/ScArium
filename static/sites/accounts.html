@@ -63,6 +63,13 @@
           <div class="control mb-3"><input class="input" type="password" placeholder="Password" id="digi4schoolPassword" required></div>
           <div class="control mb-3"><input class="input" type="text" placeholder="Display Name" id="digi4schoolDisplayName" required></div>
         </div>
+        <div id="uploadImageButtonField" class="field is-hidden">
+          <div class="control mb-3">
+            <input class="input" type="file" id="displayImage" style="display: none;" accept="image/*">
+            <button type="button" class="button" id="uploadButton">Upload Display Image</button>
+            <span id="fileName"></span>
+          </div>
+        </div>
       </section>
       <footer class="modal-card-foot">
         <button class="button is-success" id="submitBtn">Submit</button>
