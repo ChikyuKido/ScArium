@@ -17,6 +17,13 @@ func CreateMoodleAccount(user *entity.User, instanceUrl string, username string,
 
 	return database.GetDB().Create(&moodle).Error
 }
+func GetMoodleAccountById(id uint) (*entity.MoodleAccount, error) {
+	moodle := entity.MoodleAccount{}
+	if err := database.GetDB().Where("id = ?", id).First(&moodle).Error; err != nil {
+		return nil, err
+	}
+	return &moodle, nil
+}
 func GetMoodleAccounts(user *entity.User) ([]entity.MoodleAccount, error) {
 	var moodleAccounts []entity.MoodleAccount
 	if err := database.GetDB().Where(&entity.MoodleAccount{UserId: user.ID}).Find(&moodleAccounts).Error; err != nil {

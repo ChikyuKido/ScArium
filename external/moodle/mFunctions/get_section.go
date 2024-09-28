@@ -5,11 +5,10 @@ import (
 	"ScArium/external/moodle/mModel"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strconv"
 )
 
-func GetSections(client *moodle.MoodleClient, course mModel.Course) error {
+func GetSections(client *moodle.MoodleClient, course *mModel.Course) error {
 	var body, err = client.MakeWebserviceRequest("core_course_get_contents", map[string]string{"courseid": strconv.Itoa(course.ID)})
 
 	if err != nil {
@@ -23,7 +22,6 @@ func GetSections(client *moodle.MoodleClient, course mModel.Course) error {
 	if err := json.Unmarshal(body, &sections); err != nil {
 		return err
 	}
-	os.WriteFile("test.json", body, 0644)
 	course.Sections = sections
 	return nil
 }

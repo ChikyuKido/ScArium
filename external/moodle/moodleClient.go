@@ -1,7 +1,6 @@
 package moodle
 
 import (
-	"ScArium/common/log"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -19,7 +18,7 @@ type MoodleClient struct {
 	PrivateToken string
 }
 
-func NewMoodleClient(serviceUrl string, username string, password string) *MoodleClient {
+func NewMoodleClient(serviceUrl string, username string, password string) (*MoodleClient, error) {
 	client := &MoodleClient{
 		ServiceUrl: serviceUrl,
 	}
@@ -29,10 +28,9 @@ func NewMoodleClient(serviceUrl string, username string, password string) *Moodl
 	client.Client = &http.Client{Transport: tr}
 	err := client.login(username, password)
 	if err != nil {
-		log.E.Errorf("Failed to login to moodle (%s) with the username (%s): %v", serviceUrl, username, err)
-		return nil
+		return nil, fmt.Errorf("failed to login to moodle (%s) with the username (%s): %v", serviceUrl, username, err)
 	}
-	return client
+	return client, nil
 }
 func (mc *MoodleClient) login(username, password string) error {
 	loginURL := fmt.Sprintf("%s/login/token.php", mc.ServiceUrl)
@@ -121,7 +119,6 @@ func (mc *MoodleClient) MakeModRequest(function string, params map[string]string
 func (mc *MoodleClient) DownloadFile(url string, path string) error {
 	_, err := os.Stat(path)
 	if err == nil {
-		log.E.Info("File with the name already exists. Skipping it: %s", path)
 		return fmt.Errorf("file %s already exists", path)
 	}
 	req, err := http.NewRequest("GET", url, nil)

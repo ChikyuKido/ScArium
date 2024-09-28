@@ -1,5 +1,7 @@
 package mModel
 
+import "encoding/json"
+
 type Course struct {
 	ID              int             `json:"id"`
 	Fullname        string          `json:"fullname"`
@@ -22,26 +24,30 @@ type CourseSection struct {
 }
 
 type CourseModule struct {
-	ComponentID int                `json:"id"`
-	ID          int                `json:"instance"`
-	Description string             `json:"description"`
-	URL         string             `json:"url"`
-	Name        string             `json:"name"`
-	ModIcon     string             `json:"modicon"`
-	ModName     string             `json:"modname"`
-	Dates       []CourseModuleDate `json:"dates"`
-	Contents    []CourseContent    `json:"contents"`
+	ComponentID int             `json:"id"`
+	ID          int             `json:"instance"`
+	Description string          `json:"description"`
+	URL         string          `json:"url"`
+	Name        string          `json:"name"`
+	ModIcon     string          `json:"modicon"`
+	ModName     string          `json:"modname"`
+	Contents    []CourseContent `json:"contents"`
 }
 
 type CourseContent struct {
-	Type     string `json:"type"`
-	FileName string `json:"filename"`
-	FileSize int64  `json:"filesize"`
-	FileURL  string `json:"fileurl"`
+	Type        string `json:"type"`
+	FileName    string `json:"filename"`
+	FileSize    int64  `json:"filesize"`
+	FileURL     string `json:"fileurl"`
+	TimeCreated int64  `json:"timecreated"`
 }
 
-type CourseModuleDate struct {
-	Label     string `json:"label"`
-	Timestamp int64  `json:"timestamp"`
-	DataID    string `json:"dataid"`
+func (c Course) MarshalJSON() ([]byte, error) {
+	type Alias Course
+	return json.Marshal(&struct {
+		Sections interface{} `json:"sections,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(&c),
+	})
 }

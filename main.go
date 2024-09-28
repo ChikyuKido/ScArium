@@ -3,19 +3,29 @@ package main
 import (
 	"ScArium/common/config"
 	"ScArium/common/log"
-	"ScArium/external/moodle/mFunctions"
+	"ScArium/internal/backend/database"
+	"ScArium/internal/jobs"
+	"ScArium/internal/jobs/moodejob"
+	"fmt"
+	"time"
 )
+
+func sleepy() {
+	for {
+		time.Sleep(5 * time.Second)
+	}
+}
 
 func main() {
 	config.InitConfig()
 	log.InitLogger()
-
-	courses, err := mFunctions.GetCourses(mc)
-	if err != nil {
-		return
-	}
-	mFunctions.GetSections(mc, courses[0])
-
+	go jobs.Worker()
+	database.InitDB()
 	//server := internal.NewServer(7665, "localhost")
 	//server.Start()
+	err := moodejob.NewMoodleSyncJob(1)
+	if err != nil {
+		fmt.Println(err)
+	}
+	sleepy()
 }
