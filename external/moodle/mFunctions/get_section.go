@@ -23,5 +23,6 @@ func GetSections(client *moodle.MoodleClient, course *mModel.Course) error {
 		return err
 	}
 	course.Sections = sections
+
 	return nil
 }

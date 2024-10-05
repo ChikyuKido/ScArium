@@ -48,11 +48,13 @@ func syncMoodle(job jobs.Job) error {
 	job.AppendLog(logrus.InfoLevel, fmt.Sprintf("Found %d courses", len(courses)))
 	replaceImagesForCourses(job, courses)
 	retrieveSections(job, courses, mc)
-	createMetadata(job, courses, accountId)
+	retrieveAssignments(job, courses, mc)
+	writeMetadata(job, courses, accountId)
+	syncFiles(job, courses, accountId)
 	return nil
 }
 
-func createMetadata(job jobs.Job, courses []*mModel.Course, accountId uint64) {
+func writeMetadata(job jobs.Job, courses []*mModel.Course, accountId uint64) {
 	basePath := config.MOODLE_PATH + "/" + strconv.FormatUint(accountId, 10)
 	err := os.MkdirAll(basePath, os.ModePerm)
 	if err != nil {
@@ -89,6 +91,67 @@ func createMetadata(job jobs.Job, courses []*mModel.Course, accountId uint64) {
 			}
 		}
 	}
+}
+
+func retrieveAssignments(job jobs.Job, courses []*mModel.Course, mc *moodle.MoodleClient) {
+	courseAssignments, err := mFunctions.GetAssignments(mc, courses)
+	if err != nil {
+		job.AppendLog(logrus.ErrorLevel, fmt.Sprintf("Failed to get assignments: %v", err))
+	}
+	for _, course := range courses {
+		assignments, err := getAssignmentsForCourse(course.ID, courseAssignments)
+		if err != nil {
+			job.AppendLog(logrus.ErrorLevel, fmt.Sprintf("Failed to get assignments: %v", err))
+			continue
+		}
+		for i, sections := range course.Sections {
+			for j, module := range sections.Modules {
+				if module.ModName == "assign" {
+					assignData, err := getAssignmentForId(module.Instance, assignments)
+					if err != nil {
+						job.AppendLog(logrus.ErrorLevel, fmt.Sprintf("Failed to get assignment data: %v", err))
+						continue
+					}
+					submissionData, err := mFunctions.GetSubmissionData(mc, module.Instance)
+					if err != nil {
+						job.AppendLog(logrus.ErrorLevel, fmt.Sprintf("Failed to get assignment submission data: %v", err))
+						continue
+					}
+					assignContent := mModel.CourseAssignmentContent{
+						ComponentID:           assignData.ComponentID,
+						ID:                    assignData.ID,
+						Intro:                 assignData.Intro,
+						SubmissionStatement:   assignData.SubmissionStatement,
+						DueDate:               assignData.DueDate,
+						GradeForDisplay:       submissionData.GradeForDisplay,
+						GradedDate:            submissionData.GradedDate,
+						FeedbackComment:       submissionData.FeedbackComment,
+						IntroAttachment:       assignData.IntroAttachment,
+						SubmissionAttachments: submissionData.SubmissionAttachments,
+					}
+					course.Sections[i].Modules[j].CourseAssignmentContent = assignContent
+				}
+			}
+		}
+	}
+}
+
+func getAssignmentForId(id int, assignments *mModel.CourseAssignments) (mModel.CourseModAssignment, error) {
+	for _, assign := range assignments.Assignments {
+		if assign.ID == id {
+			return assign, nil
+		}
+	}
+	return mModel.CourseModAssignment{}, fmt.Errorf("failed to retrieve assignment for id: %d", id)
+}
+
+func getAssignmentsForCourse(id int, courseAssignments []*mModel.CourseAssignments) (*mModel.CourseAssignments, error) {
+	for _, assignemnts := range courseAssignments {
+		if assignemnts.ID == id {
+			return assignemnts, nil
+		}
+	}
+	return nil, fmt.Errorf("failed to retrieve assignments for course with id: %d", id)
 }
 
 func retrieveSections(job jobs.Job, courses []*mModel.Course, mc *moodle.MoodleClient) {
