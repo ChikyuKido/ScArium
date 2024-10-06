@@ -62,7 +62,6 @@ type CourseModSubmission struct {
 	SubmissionAttachments []MoodleFile `json:"submissionattachments"`
 }
 type CourseAssignmentContent struct {
-	ComponentID           int          `json:"cmid"`
 	ID                    int          `json:"id"`
 	Intro                 string       `json:"intro"`
 	SubmissionStatement   string       `json:"submissionstatement"`

@@ -25,7 +25,7 @@ func InitDB() {
 	if err != nil {
 		log.I.Fatalf("failed to create d4s account database: %v", err)
 	}
-	err = db.AutoMigrate(&entity.MoodleAccount{})
+	err = db.AutoMigrate(&entity.MoodleAccount{}, &entity.MoodleCourse{}, &entity.MoodleCourseSection{}, &entity.MoodleResource{}, &entity.MoodleAssignSubmissionResource{})
 	if err != nil {
 		log.I.Fatalf("failed to create moodle account database: %v", err)
 	}

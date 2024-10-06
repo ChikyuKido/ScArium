@@ -116,10 +116,12 @@ func (mc *MoodleClient) MakeWebserviceRequest(function string, params map[string
 func (mc *MoodleClient) MakeModRequest(function string, params map[string]string) ([]byte, error) {
 	return mc.makeRequest(function, params, "/mod/assign/view.php")
 }
-func (mc *MoodleClient) DownloadFile(url string, path string) error {
-	_, err := os.Stat(path)
+func (mc *MoodleClient) DownloadFile(url string, fileSize int64, path string) error {
+	stat, err := os.Stat(path)
 	if err == nil {
-		return fmt.Errorf("file %s already exists", path)
+		if stat.Size() == fileSize {
+			return fmt.Errorf("file %s already exists", path)
+		}
 	}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

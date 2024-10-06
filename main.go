@@ -27,5 +27,9 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+	//err = moodejob.NewMoodleSyncJob(2)
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
 	sleepy()
 }

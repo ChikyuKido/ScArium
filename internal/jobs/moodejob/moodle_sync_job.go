@@ -1,13 +1,13 @@
 package moodejob
 
 import (
-	"ScArium/common/config"
 	"ScArium/external/moodle"
 	"ScArium/external/moodle/mFunctions"
 	"ScArium/external/moodle/mModel"
+	"ScArium/internal/backend/database/entity"
 	"ScArium/internal/backend/database/repo"
+	"ScArium/internal/backend/helper"
 	"ScArium/internal/jobs"
-	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"os"
@@ -50,11 +50,87 @@ func syncMoodle(job jobs.Job) error {
 	retrieveSections(job, courses, mc)
 	retrieveAssignments(job, courses, mc)
 	writeMetadata(job, courses, accountId)
-	syncFiles(job, courses, accountId)
+	syncFiles(job, courses, accountId, mc)
 	return nil
 }
 
 func writeMetadata(job jobs.Job, courses []*mModel.Course, accountId uint64) {
+	for _, course := range courses {
+		databaseCourse := entity.MoodleCourse{
+			CourseID:        uint(course.ID),
+			Fullname:        course.Fullname,
+			ShortName:       course.ShortName,
+			Summary:         course.Summary,
+			Visible:         course.Visible,
+			StartDate:       course.StartDate,
+			EndDate:         course.EndDate,
+			CourseImage:     course.CourseImage,
+			CourseImageType: course.CourseImageType,
+			Category:        course.Category,
+		}
+		err := repo.InsertCourse(databaseCourse)
+		if err != nil {
+			job.AppendLog(logrus.ErrorLevel, fmt.Sprintf("failed to insert course with id %d to database", course.ID))
+		}
+		databaseSections := make([]entity.MoodleCourseSection, len(course.Sections))
+		for i, section := range course.Sections {
+			databaseSections[i].SectionID = uint(course.Sections[i].ID)
+			databaseSections[i].SectionNumber = course.Sections[i].SectionNumber
+			databaseSections[i].Name = course.Sections[i].Name
+			databaseSections[i].MoodleCourseId = uint(course.ID)
+			databaseResources := make([]entity.MoodleResource, len(section.Modules))
+			databaseAssignSubmissionResources := make([]entity.MoodleAssignSubmissionResource, 0)
+			for i, module := range section.Modules {
+				intro := entity.MoodleAssignIntroResource{
+					Intro:               module.CourseAssignmentContent.Intro,
+					SubmissionStatement: module.CourseAssignmentContent.SubmissionStatement,
+					IntroAttachment:     helper.ConvertStructToJsonOr(module.CourseAssignmentContent.IntroAttachment, "[]"),
+				}
+
+				databaseResources[i].ResourceID = uint(module.ID)
+				databaseResources[i].Instance = uint(module.Instance)
+				databaseResources[i].ModName = module.ModName
+				databaseResources[i].Name = module.Name
+				databaseResources[i].MoodleCourseSectionId = uint(section.ID)
+				databaseResources[i].Description = module.Description
+				databaseResources[i].ModIcon = module.ModIcon
+				databaseResources[i].URL = module.URL
+				databaseResources[i].AssignIntroResource = helper.ConvertStructToJsonOr(intro, "{}")
+				databaseResources[i].ResourceContent = helper.ConvertStructToJsonOr(module.Contents, "[]")
+
+				if module.ModName == "assign" {
+					submissionResource := entity.MoodleAssignSubmissionResource{
+						GradeForDisplay:       module.CourseAssignmentContent.GradeForDisplay,
+						GradedDate:            module.CourseAssignmentContent.GradedDate,
+						FeedbackComment:       module.CourseAssignmentContent.FeedbackComment,
+						SubmissionAttachments: helper.ConvertStructToJsonOr(module.CourseAssignmentContent.SubmissionAttachments, "[]"),
+						AccountId:             uint(accountId),
+						MoodleResourceID:      uint(module.ID),
+					}
+					databaseAssignSubmissionResources = append(databaseAssignSubmissionResources, submissionResource)
+				}
+			}
+			err = repo.InsertResource(databaseResources)
+			if err != nil {
+				job.AppendLog(logrus.ErrorLevel, fmt.Sprintf("failed to insert resources for course with id %d to database", course.ID))
+			}
+			err = repo.InsertResourceAssign(databaseAssignSubmissionResources)
+			if err != nil {
+				job.AppendLog(logrus.ErrorLevel, fmt.Sprintf("failed to insert submission resources for course with id %d to database", course.ID))
+			}
+		}
+		err = repo.InsertSections(databaseSections)
+		if err != nil {
+			job.AppendLog(logrus.ErrorLevel, fmt.Sprintf("failed to insert sections for course with id %d to database", course.ID))
+		}
+
+		fmt.Println(course.ShortName)
+	}
+}
+
+/*
+func writeMetadata(job jobs.Job, courses []*mModel.Course, accountId uint64) {
+	job.AppendLog(logrus.InfoLevel, "Writing metadata for  courses")
 	basePath := config.MOODLE_PATH + "/" + strconv.FormatUint(accountId, 10)
 	err := os.MkdirAll(basePath, os.ModePerm)
 	if err != nil {
@@ -91,9 +167,11 @@ func writeMetadata(job jobs.Job, courses []*mModel.Course, accountId uint64) {
 			}
 		}
 	}
-}
+	job.AppendLog(logrus.InfoLevel, "Metadata written successfully")
+}*/
 
 func retrieveAssignments(job jobs.Job, courses []*mModel.Course, mc *moodle.MoodleClient) {
+	job.AppendLog(logrus.InfoLevel, "Retrieve assignments for courses")
 	courseAssignments, err := mFunctions.GetAssignments(mc, courses)
 	if err != nil {
 		job.AppendLog(logrus.ErrorLevel, fmt.Sprintf("Failed to get assignments: %v", err))
@@ -118,7 +196,6 @@ func retrieveAssignments(job jobs.Job, courses []*mModel.Course, mc *moodle.Mood
 						continue
 					}
 					assignContent := mModel.CourseAssignmentContent{
-						ComponentID:           assignData.ComponentID,
 						ID:                    assignData.ID,
 						Intro:                 assignData.Intro,
 						SubmissionStatement:   assignData.SubmissionStatement,
@@ -134,6 +211,7 @@ func retrieveAssignments(job jobs.Job, courses []*mModel.Course, mc *moodle.Mood
 			}
 		}
 	}
+	job.AppendLog(logrus.InfoLevel, "Finish retrieve assignments for courses")
 }
 
 func getAssignmentForId(id int, assignments *mModel.CourseAssignments) (mModel.CourseModAssignment, error) {
@@ -155,16 +233,18 @@ func getAssignmentsForCourse(id int, courseAssignments []*mModel.CourseAssignmen
 }
 
 func retrieveSections(job jobs.Job, courses []*mModel.Course, mc *moodle.MoodleClient) {
+	job.AppendLog(logrus.InfoLevel, "Retrieving sections for courses")
 	for _, course := range courses {
 		err := mFunctions.GetSections(mc, course)
 		if err != nil {
 			job.AppendLog(logrus.ErrorLevel, fmt.Sprintf("failed to get sections for course: %s: %v", course.ShortName, err))
 		}
-		job.AppendLog(logrus.InfoLevel, fmt.Sprintf("Found sections %d for course: %s", len(course.Sections), course.ShortName))
 	}
+	job.AppendLog(logrus.InfoLevel, "Finish retrieving sections for courses")
 }
 
 func replaceImagesForCourses(job jobs.Job, courses []*mModel.Course) {
+	job.AppendLog(logrus.InfoLevel, "Replace images for courses")
 	for i := range courses {
 		if strings.Contains(courses[i].CourseImage, "http") {
 			file, err := os.ReadFile("static/imgs/defaultMoodleCourse.svg")
@@ -175,4 +255,5 @@ func replaceImagesForCourses(job jobs.Job, courses []*mModel.Course) {
 			courses[i].CourseImage = string(file)
 		}
 	}
+	job.AppendLog(logrus.InfoLevel, "Finish replacing images for courses")
 }
